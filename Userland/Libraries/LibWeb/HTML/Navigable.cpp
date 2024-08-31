@@ -2107,26 +2107,62 @@ bool Navigable::is_focused() const
 
 static String visible_text_in_range(DOM::Range const& range)
 {
-    // NOTE: This is an adaption of Range stringification, but we skip over DOM nodes that don't have a corresponding layout node.
     StringBuilder builder;
 
-    if (range.start_container() == range.end_container() && is<DOM::Text>(*range.start_container())) {
-        if (!range.start_container()->layout_node())
-            return String {};
-        return MUST(static_cast<DOM::Text const&>(*range.start_container()).data().substring_from_byte_offset(range.start_offset(), range.end_offset() - range.start_offset()));
+    // NOTE: This is an adaption of Range stringification, but we skip over DOM nodes that don't have a corresponding layout node.
+    auto const append_if_not_whitespace = [&builder](DOM::Node const& node, Optional<WebIDL::UnsignedLong> start_offset = {}, Optional<WebIDL::UnsignedLong> end_offset = {}) {
+        if (!node.layout_node())
+            return;
+
+        auto const& layout_node = static_cast<Layout::Node const&>(*node.layout_node());
+        if (!layout_node.is_text_node()) {
+            if (layout_node.is_break_node())
+                builder.append('\n');
+            return;
+        }
+
+        auto text_for_rendering = static_cast<Layout::TextNode const&>(layout_node).text_for_rendering().bytes_as_string_view();
+        dbgln("\"{}\"", text_for_rendering);
+
+        StringView text = text_for_rendering;
+        // auto const& parent = *layout_node.parent();
+        if (!start_offset.has_value() && !end_offset.has_value()) {
+            /*
+            if (&layout_node == parent.first_child())
+                text = text.trim_whitespace(TrimMode::Left);
+
+            if (&layout_node == parent.last_child()) {
+                text = text.trim_whitespace(TrimMode::Right);
+                if (!parent.is_inline())
+                    append_newline = true;
+            }
+            */
+
+        } else if (start_offset.has_value() && end_offset.has_value()) {
+            text = text.substring_view(start_offset.value(), end_offset.value());
+        } else if (start_offset.has_value()) {
+            text = text.substring_view(start_offset.value());
+        } else {
+            text = text.substring_view(0, end_offset.value());
+        }
+
+        builder.append(text);
+    };
+
+    if (range.start_container() == range.end_container()) {
+        append_if_not_whitespace(*range.start_container(), range.start_offset(), range.end_offset() - range.start_offset());
+        return MUST(builder.to_string());
     }
 
-    if (is<DOM::Text>(*range.start_container()) && range.start_container()->layout_node())
-        builder.append(static_cast<DOM::Text const&>(*range.start_container()).data().bytes_as_string_view().substring_view(range.start_offset()));
+    append_if_not_whitespace(*range.start_container(), range.start_offset());
 
-    for (DOM::Node const* node = range.start_container(); node != range.end_container()->next_sibling(); node = node->next_in_pre_order()) {
-        if (is<DOM::Text>(*node) && range.contains_node(*node) && node->layout_node())
-            builder.append(static_cast<DOM::Text const&>(*node).data());
+    for (auto const* node = range.start_container(); node != range.end_container()->next_sibling(); node = node->next_in_pre_order()) {
+        if (!range.contains_node(*node))
+            continue;
+        append_if_not_whitespace(*node);
     }
 
-    if (is<DOM::Text>(*range.end_container()) && range.end_container()->layout_node())
-        builder.append(static_cast<DOM::Text const&>(*range.end_container()).data().bytes_as_string_view().substring_view(0, range.end_offset()));
-
+    append_if_not_whitespace(*range.end_container(), 0, range.end_offset());
     return MUST(builder.to_string());
 }
 
