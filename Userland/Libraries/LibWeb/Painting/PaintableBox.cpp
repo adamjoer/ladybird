@@ -804,8 +804,11 @@ TraversalDecision PaintableBox::hit_test_scrollbars(CSSPixelPoint position, Func
     return TraversalDecision::Continue;
 }
 
-TraversalDecision PaintableBox::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
+TraversalDecision PaintableBox::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback, bool debug_output) const
 {
+    if (debug_output)
+        dbgln("PaintableBox::hit_test(with callback): position=[{}, {}]", position.x(), position.y());
+
     if (clip_rect_for_hit_testing().has_value() && !clip_rect_for_hit_testing()->contains(position))
         return TraversalDecision::Continue;
 
@@ -843,10 +846,14 @@ TraversalDecision PaintableBox::hit_test(CSSPixelPoint position, HitTestType typ
     return callback(HitTestResult { const_cast<PaintableBox&>(*this) });
 }
 
-Optional<HitTestResult> PaintableBox::hit_test(CSSPixelPoint position, HitTestType type) const
+Optional<HitTestResult> PaintableBox::hit_test(CSSPixelPoint position, HitTestType type, bool debug_output) const
 {
+    if (debug_output)
+        dbgln("PaintableBox::hit_test: this={}, position=[{}, {}]", this->dom_node()->debug_description(), position.x(), position.y());
     Optional<HitTestResult> result;
     (void)PaintableBox::hit_test(position, type, [&](HitTestResult candidate) {
+        if (debug_output)
+            dbgln("    candidate=[dom_node={}, index_in_node={}]", candidate.dom_node()->debug_description(), candidate.index_in_node);
         if (candidate.paintable->visible_for_hit_testing()) {
             if (!result.has_value()
                 || candidate.vertical_distance.value_or(CSSPixels::max_integer_value) < result->vertical_distance.value_or(CSSPixels::max_integer_value)
@@ -862,7 +869,7 @@ Optional<HitTestResult> PaintableBox::hit_test(CSSPixelPoint position, HitTestTy
     return result;
 }
 
-TraversalDecision PaintableWithLines::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
+TraversalDecision PaintableWithLines::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback, bool) const
 {
     if (clip_rect_for_hit_testing().has_value() && !clip_rect_for_hit_testing()->contains(position))
         return TraversalDecision::Continue;

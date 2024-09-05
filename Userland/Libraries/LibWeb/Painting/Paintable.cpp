@@ -103,7 +103,7 @@ bool Paintable::handle_mousewheel(Badge<EventHandler>, CSSPixelPoint, unsigned, 
     return false;
 }
 
-TraversalDecision Paintable::hit_test(CSSPixelPoint, HitTestType, Function<TraversalDecision(HitTestResult)> const&) const
+TraversalDecision Paintable::hit_test(CSSPixelPoint, HitTestType, Function<TraversalDecision(HitTestResult)> const&, bool) const
 {
     return TraversalDecision::Continue;
 }

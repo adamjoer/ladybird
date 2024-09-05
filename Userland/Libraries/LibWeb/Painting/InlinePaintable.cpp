@@ -187,7 +187,7 @@ void InlinePaintable::for_each_fragment(Callback callback) const
     }
 }
 
-TraversalDecision InlinePaintable::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
+TraversalDecision InlinePaintable::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback, bool) const
 {
     if (clip_rect_for_hit_testing().has_value() && !clip_rect_for_hit_testing().value().contains(position))
         return TraversalDecision::Continue;

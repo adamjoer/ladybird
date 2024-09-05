@@ -339,7 +339,7 @@ void StackingContext::paint(PaintContext& context) const
     context.display_list_recorder().restore();
 }
 
-TraversalDecision StackingContext::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
+TraversalDecision StackingContext::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback, bool) const
 {
     if (!paintable().is_visible())
         return TraversalDecision::Continue;

@@ -26,9 +26,9 @@ Layout::SVGForeignObjectBox const& SVGForeignObjectPaintable::layout_box() const
     return static_cast<Layout::SVGForeignObjectBox const&>(layout_node());
 }
 
-TraversalDecision SVGForeignObjectPaintable::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
+TraversalDecision SVGForeignObjectPaintable::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback, bool debug_output) const
 {
-    return PaintableWithLines::hit_test(position, type, callback);
+    return PaintableWithLines::hit_test(position, type, callback, debug_output);
 }
 
 void SVGForeignObjectPaintable::paint(PaintContext& context, PaintPhase phase) const

@@ -38,7 +38,7 @@ public:
     static void paint_descendants(PaintContext&, Paintable const&, StackingContextPaintPhase);
     void paint(PaintContext&) const;
 
-    [[nodiscard]] TraversalDecision hit_test(CSSPixelPoint, HitTestType, Function<TraversalDecision(HitTestResult)> const& callback) const;
+    [[nodiscard]] TraversalDecision hit_test(CSSPixelPoint, HitTestType, Function<TraversalDecision(HitTestResult)> const& callback, bool debug_output = false) const;
 
     Gfx::AffineTransform affine_transform_matrix() const;
 

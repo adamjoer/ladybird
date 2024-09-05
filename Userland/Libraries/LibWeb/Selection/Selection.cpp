@@ -299,6 +299,8 @@ WebIDL::ExceptionOr<void> Selection::extend(JS::NonnullGCPtr<DOM::Node> node, un
 // https://w3c.github.io/selection-api/#dom-selection-setbaseandextent
 WebIDL::ExceptionOr<void> Selection::set_base_and_extent(JS::NonnullGCPtr<DOM::Node> anchor_node, unsigned anchor_offset, JS::NonnullGCPtr<DOM::Node> focus_node, unsigned focus_offset)
 {
+    dbgln("Selection::set_base_and_extent: anchor_node=\"{}\", anchor_offset={}, focus_node=\"{}\", focus_offset={}", anchor_node->text_content(), anchor_offset, focus_node->text_content(), focus_offset);
+
     // 1. If anchorOffset is longer than anchorNode's length or if focusOffset is longer than focusNode's length, throw an IndexSizeError exception and abort these steps.
     if (anchor_offset > anchor_node->length())
         return WebIDL::IndexSizeError::create(realm(), "Anchor offset points outside of the anchor node"_fly_string);

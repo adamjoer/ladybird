@@ -433,7 +433,7 @@ bool EventHandler::handle_mousedown(CSSPixelPoint viewport_position, CSSPixelPoi
         return true;
 
     if (button == UIEvents::MouseButton::Primary) {
-        if (auto result = paint_root()->hit_test(position, Painting::HitTestType::TextCursor); result.has_value()) {
+        if (auto result = paint_root()->hit_test(position, Painting::HitTestType::TextCursor, true); result.has_value()) {
             auto paintable = result->paintable;
             auto dom_node = paintable->dom_node();
             if (dom_node) {
@@ -454,9 +454,13 @@ bool EventHandler::handle_mousedown(CSSPixelPoint viewport_position, CSSPixelPoi
                     if (auto selection = document->get_selection()) {
                         auto anchor_node = selection->anchor_node();
                         if (anchor_node && modifiers & UIEvents::KeyModifier::Mod_Shift) {
-                            (void)selection->set_base_and_extent(*anchor_node, selection->anchor_offset(), *dom_node, result->index_in_node);
+                            auto maybe_exception = selection->set_base_and_extent(*anchor_node, selection->anchor_offset(), *dom_node, result->index_in_node);
+                            if (maybe_exception.is_exception())
+                                dbgln("EventHandler::handle_mousedown: selection error: {}", maybe_exception.exception().get<JS::NonnullGCPtr<WebIDL::DOMException>>()->message());
                         } else {
-                            (void)selection->set_base_and_extent(*dom_node, result->index_in_node, *dom_node, result->index_in_node);
+                            auto maybe_exception = selection->set_base_and_extent(*dom_node, result->index_in_node, *dom_node, result->index_in_node);
+                            if (maybe_exception.is_exception())
+                                dbgln("EventHandler::handle_mousedown: selection error: {}", maybe_exception.exception().get<JS::NonnullGCPtr<WebIDL::DOMException>>()->message());
                         }
                     }
                     update_selection_range_for_input_or_textarea();
@@ -571,18 +575,22 @@ bool EventHandler::handle_mousemove(CSSPixelPoint viewport_position, CSSPixelPoi
                 return true;
         }
         if (m_in_mouse_selection) {
-            auto hit = paint_root()->hit_test(position, Painting::HitTestType::TextCursor);
+            auto hit = paint_root()->hit_test(position, Painting::HitTestType::TextCursor, true);
             auto should_set_cursor_position = true;
             if (start_index.has_value() && hit.has_value() && hit->dom_node()) {
                 if (auto selection = document.get_selection()) {
                     auto anchor_node = selection->anchor_node();
                     if (anchor_node) {
-                        if (&anchor_node->root() == &hit->dom_node()->root())
-                            (void)selection->set_base_and_extent(*anchor_node, selection->anchor_offset(), *hit->paintable->dom_node(), hit->index_in_node);
-                        else
+                        if (&anchor_node->root() == &hit->dom_node()->root()) {
+                            auto maybe_exception = selection->set_base_and_extent(*anchor_node, selection->anchor_offset(), *hit->paintable->dom_node(), hit->index_in_node);
+                            if (maybe_exception.is_exception())
+                                dbgln("EventHandler::handle_mousemove: selection error: {}", maybe_exception.exception().get<JS::NonnullGCPtr<WebIDL::DOMException>>()->message());
+                        } else
                             should_set_cursor_position = false;
                     } else {
-                        (void)selection->set_base_and_extent(*hit->paintable->dom_node(), hit->index_in_node, *hit->paintable->dom_node(), hit->index_in_node);
+                        auto maybe_exception = selection->set_base_and_extent(*hit->paintable->dom_node(), hit->index_in_node, *hit->paintable->dom_node(), hit->index_in_node);
+                        if (maybe_exception.is_exception())
+                            dbgln("EventHandler::handle_mousemove: selection error: {}", maybe_exception.exception().get<JS::NonnullGCPtr<WebIDL::DOMException>>()->message());
                     }
                 }
                 if (should_set_cursor_position)

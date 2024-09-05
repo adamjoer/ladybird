@@ -28,7 +28,7 @@ Layout::SVGGraphicsBox const& SVGPathPaintable::layout_box() const
     return static_cast<Layout::SVGGraphicsBox const&>(layout_node());
 }
 
-TraversalDecision SVGPathPaintable::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
+TraversalDecision SVGPathPaintable::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback, bool) const
 {
     if (!computed_path().has_value())
         return TraversalDecision::Continue;

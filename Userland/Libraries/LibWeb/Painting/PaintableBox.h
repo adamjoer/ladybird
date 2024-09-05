@@ -136,8 +136,8 @@ public:
     virtual void apply_clip_overflow_rect(PaintContext&, PaintPhase) const override;
     virtual void clear_clip_overflow_rect(PaintContext&, PaintPhase) const override;
 
-    [[nodiscard]] virtual TraversalDecision hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const override;
-    Optional<HitTestResult> hit_test(CSSPixelPoint, HitTestType) const;
+    [[nodiscard]] virtual TraversalDecision hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback, bool debug_output = false) const override;
+    Optional<HitTestResult> hit_test(CSSPixelPoint, HitTestType, bool debug_output = false) const;
 
     virtual bool handle_mousewheel(Badge<EventHandler>, CSSPixelPoint, unsigned buttons, unsigned modifiers, int wheel_delta_x, int wheel_delta_y) override;
 
@@ -320,7 +320,7 @@ public:
 
     virtual void paint(PaintContext&, PaintPhase) const override;
 
-    [[nodiscard]] virtual TraversalDecision hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const override;
+    [[nodiscard]] virtual TraversalDecision hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback, bool debug_output = false) const override;
 
     virtual void visit_edges(Cell::Visitor& visitor) override
     {
