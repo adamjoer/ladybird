@@ -30,6 +30,12 @@ Layout::SVGGraphicsBox const& SVGPathPaintable::layout_box() const
 
 TraversalDecision SVGPathPaintable::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
 {
+    if (type == HitTestType::Test) {
+        dbgln("SVGPathPaintable::hit_test {} ({})", class_name(), layout_node().debug_description());
+        for (auto const* child = last_child(); child; child = child->previous_sibling()) {
+            dbgln("    {} ({})", child->class_name(), child->layout_node().debug_description());
+        }
+    }
     if (!computed_path().has_value())
         return TraversalDecision::Continue;
     auto transformed_bounding_box = computed_transforms().svg_to_css_pixels_transform().map_to_quad(computed_path()->bounding_box());

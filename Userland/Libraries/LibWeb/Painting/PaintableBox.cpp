@@ -810,6 +810,12 @@ TraversalDecision PaintableBox::hit_test_scrollbars(CSSPixelPoint position, Func
 
 TraversalDecision PaintableBox::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
 {
+    if (type == HitTestType::Test) {
+        dbgln("PaintableBox::hit_test {} ({})", class_name(), layout_node().debug_description());
+        for (auto const* child = last_child(); child; child = child->previous_sibling()) {
+            dbgln("    {} ({})", child->class_name(), child->layout_node().debug_description());
+        }
+    }
     if (clip_rect_for_hit_testing().has_value() && !clip_rect_for_hit_testing()->contains(position))
         return TraversalDecision::Continue;
 
@@ -844,17 +850,36 @@ TraversalDecision PaintableBox::hit_test(CSSPixelPoint position, HitTestType typ
     if (!visible_for_hit_testing())
         return TraversalDecision::Continue;
 
-    return callback(HitTestResult { const_cast<PaintableBox&>(*this) });
+    auto const box_rect = absolute_border_box_rect();
+    return callback(HitTestResult {
+        .paintable = const_cast<PaintableBox&>(*this),
+        .vertical_distance = position_adjusted_by_scroll_offset.y() - box_rect.top(),
+        .horizontal_distance = position_adjusted_by_scroll_offset.x() - box_rect.left(),
+    });
 }
 
 Optional<HitTestResult> PaintableBox::hit_test(CSSPixelPoint position, HitTestType type) const
 {
     Optional<HitTestResult> result;
     (void)PaintableBox::hit_test(position, type, [&](HitTestResult candidate) {
+        if (type == HitTestType::Test) {
+            dbgln("callback: Getting candidate {} ({}), distance=[{},{}]",
+                candidate.paintable->class_name(),
+                candidate.paintable->layout_node().debug_description(),
+                candidate.horizontal_distance.value_or(CSSPixels::max_integer_value),
+                candidate.vertical_distance.value_or(CSSPixels::max_integer_value));
+        }
         if (candidate.paintable->visible_for_hit_testing()) {
             if (!result.has_value()
                 || candidate.vertical_distance.value_or(CSSPixels::max_integer_value) < result->vertical_distance.value_or(CSSPixels::max_integer_value)
                 || candidate.horizontal_distance.value_or(CSSPixels::max_integer_value) < result->horizontal_distance.value_or(CSSPixels::max_integer_value)) {
+                if (type == HitTestType::Test && result.has_value()) {
+                    dbgln("    Chosen over {} ({}), distance=[{},{}]",
+                        result->paintable->class_name(),
+                        result->paintable->layout_node().debug_description(),
+                        result->horizontal_distance.value_or(CSSPixels::max_integer_value),
+                        result->vertical_distance.value_or(CSSPixels::max_integer_value));
+                }
                 result = move(candidate);
             }
         }
@@ -868,6 +893,12 @@ Optional<HitTestResult> PaintableBox::hit_test(CSSPixelPoint position, HitTestTy
 
 TraversalDecision PaintableWithLines::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
 {
+    if (type == HitTestType::Test) {
+        dbgln("PaintableWithLines::hit_test {} ({}).", class_name(), layout_node().debug_description());
+        for (auto const* child = last_child(); child; child = child->previous_sibling()) {
+            dbgln("    {} ({})", child->class_name(), child->layout_node().debug_description());
+        }
+    }
     if (clip_rect_for_hit_testing().has_value() && !clip_rect_for_hit_testing()->contains(position))
         return TraversalDecision::Continue;
 
@@ -896,7 +927,7 @@ TraversalDecision PaintableWithLines::hit_test(CSSPixelPoint position, HitTestTy
             HitTestResult hit_test_result { const_cast<Paintable&>(fragment.paintable()), fragment.text_index_at(position_adjusted_by_scroll_offset.x()), 0, 0 };
             if (callback(hit_test_result) == TraversalDecision::Break)
                 return TraversalDecision::Break;
-        } else if (type == HitTestType::TextCursor) {
+        } else if (type == HitTestType::TextCursor || type == HitTestType::Test) {
             auto const* common_ancestor_parent = [&]() -> DOM::Node const* {
                 auto selection = document().get_selection();
                 if (!selection)
@@ -949,8 +980,14 @@ TraversalDecision PaintableWithLines::hit_test(CSSPixelPoint position, HitTestTy
         }
     }
 
-    if (!stacking_context() && is_visible() && absolute_border_box_rect().contains(position_adjusted_by_scroll_offset.x(), position_adjusted_by_scroll_offset.y())) {
-        if (callback(HitTestResult { const_cast<PaintableWithLines&>(*this) }) == TraversalDecision::Break)
+    auto const box_rect = absolute_border_box_rect();
+    if (!stacking_context() && is_visible() && box_rect.contains(position_adjusted_by_scroll_offset.x(), position_adjusted_by_scroll_offset.y())) {
+        if (callback(HitTestResult {
+                .paintable = const_cast<PaintableWithLines&>(*this),
+                .vertical_distance = position_adjusted_by_scroll_offset.y() - box_rect.top(),
+                .horizontal_distance = position_adjusted_by_scroll_offset.x() - box_rect.left(),
+            })
+            == TraversalDecision::Break)
             return TraversalDecision::Break;
     }
 

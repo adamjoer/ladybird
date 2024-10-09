@@ -364,6 +364,17 @@ void StackingContext::paint(PaintContext& context) const
 
 TraversalDecision StackingContext::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
 {
+    if (type == HitTestType::Test) {
+        CSSPixelRect rect;
+        if (paintable().is_paintable_box()) {
+            rect = paintable_box().absolute_rect();
+        } else if (paintable().is_inline_paintable()) {
+            rect = inline_paintable().bounding_rect();
+        } else {
+            VERIFY_NOT_REACHED();
+        }
+        dbgln("StackingContext::hit_test {} {} [children: {}]", paintable().layout_node().debug_description(), rect, m_children.size());
+    }
     if (!paintable().is_visible())
         return TraversalDecision::Continue;
 

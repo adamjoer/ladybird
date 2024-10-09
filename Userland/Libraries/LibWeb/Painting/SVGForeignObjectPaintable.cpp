@@ -28,6 +28,12 @@ Layout::SVGForeignObjectBox const& SVGForeignObjectPaintable::layout_box() const
 
 TraversalDecision SVGForeignObjectPaintable::hit_test(CSSPixelPoint position, HitTestType type, Function<TraversalDecision(HitTestResult)> const& callback) const
 {
+    if (type == HitTestType::Test) {
+        dbgln("SVGForeignObjectPaintable::hit_test {} ({})", class_name(), layout_node().debug_description());
+        for (auto const* child = last_child(); child; child = child->previous_sibling()) {
+            dbgln("    {} ({})", child->class_name(), child->layout_node().debug_description());
+        }
+    }
     return PaintableWithLines::hit_test(position, type, callback);
 }
 

@@ -44,6 +44,7 @@ struct HitTestResult {
 enum class HitTestType {
     Exact,      // Exact matches only
     TextCursor, // Clicking past the right/bottom edge of text will still hit the text
+    Test,
 };
 
 class Paintable

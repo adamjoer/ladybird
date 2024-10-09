@@ -436,9 +436,10 @@ EventResult EventHandler::handle_mousedown(CSSPixelPoint viewport_position, CSSP
         return EventResult::Accepted;
 
     if (button == UIEvents::MouseButton::Primary) {
-        if (auto result = paint_root()->hit_test(position, Painting::HitTestType::TextCursor); result.has_value()) {
+        if (auto result = paint_root()->hit_test(position, Painting::HitTestType::Test); result.has_value()) {
             auto paintable = result->paintable;
             auto dom_node = paintable->dom_node();
+            dbgln("Click @ {} gives {} ({})", position, dom_node->debug_description(), result->paintable->layout_node().debug_description());
             if (dom_node) {
                 // See if we want to focus something.
                 JS::GCPtr<DOM::Node> focus_candidate;
