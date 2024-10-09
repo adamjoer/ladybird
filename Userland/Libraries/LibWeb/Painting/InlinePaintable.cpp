@@ -205,7 +205,7 @@ TraversalDecision InlinePaintable::hit_test(CSSPixelPoint position, HitTestType 
             auto hit_test_result = HitTestResult { const_cast<Paintable&>(fragment.paintable()), fragment.text_index_at(position_adjusted_by_scroll_offset.x()) };
             if (callback(hit_test_result) == TraversalDecision::Break)
                 return TraversalDecision::Break;
-        } else if (type == HitTestType::TextCursor) {
+        } else if (type == HitTestType::TextCursor || type == HitTestType::Test) {
             auto const* common_ancestor_parent = [&]() -> DOM::Node const* {
                 auto selection = document().get_selection();
                 if (!selection)
