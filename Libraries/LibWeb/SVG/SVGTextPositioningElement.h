@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <LibWeb/SVG/AttributeParser.h>
 #include <LibWeb/SVG/SVGTextContentElement.h>
 #include <LibWeb/WebIDL/ExceptionOr.h>
 
@@ -31,10 +32,10 @@ protected:
     virtual void initialize(JS::Realm&) override;
 
 private:
-    Optional<NumberPercentage> m_x;
-    Optional<NumberPercentage> m_y;
-    Optional<NumberPercentage> m_dx;
-    Optional<NumberPercentage> m_dy;
+    Optional<LengthPercentageOrNumber> m_x;
+    Optional<LengthPercentageOrNumber> m_y;
+    Optional<LengthPercentageOrNumber> m_dx;
+    Optional<LengthPercentageOrNumber> m_dy;
 };
 
 }
