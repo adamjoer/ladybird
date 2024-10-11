@@ -69,6 +69,41 @@ Optional<float> AttributeParser::parse_length(StringView input)
     return {};
 }
 
+Optional<CSS::Length> AttributeParser::parse_actual_length(StringView input)
+{
+    AttributeParser parser { input };
+    parser.parse_whitespace();
+    auto result_or_error = parser.parse_actual_length();
+    if (result_or_error.is_error())
+        return {};
+    parser.parse_whitespace();
+    if (parser.done())
+        return result_or_error.value();
+
+    return {};
+}
+
+Optional<LengthPercentageOrNumber> AttributeParser::parse_length_percentage_or_number(StringView input)
+{
+    AttributeParser parser { input };
+    parser.parse_whitespace();
+    auto result_or_error = parser.parse_length_percentage_or_number();
+    if (result_or_error.is_error())
+        return {};
+    parser.parse_whitespace();
+    if (parser.done())
+        return result_or_error.value();
+
+    return {};
+}
+
+CSSPixels LengthPercentageOrNumber::to_px(Layout::Node const& layout_node, CSSPixels reference_value) const
+{
+    if (is_number())
+        return CSSPixels(m_value.get<float>());
+    return m_value.get<CSS::LengthPercentage>().to_px(layout_node, reference_value);
+}
+
 float NumberPercentage::resolve_relative_to(float length) const
 {
     if (!m_is_percentage)
@@ -294,6 +329,67 @@ ErrorOr<float> AttributeParser::parse_length()
 {
     // https://www.w3.org/TR/SVG11/types.html#DataTypeLength
     return parse_number();
+}
+
+ErrorOr<CSS::Length> AttributeParser::parse_actual_length()
+{
+    auto const number = TRY(parse_number());
+    auto const type = TRY(parse_length_type(number));
+    return CSS::Length(number, type);
+}
+
+ErrorOr<LengthPercentageOrNumber> AttributeParser::parse_length_percentage_or_number()
+{
+    if (!match_number())
+        return Error::from_string_literal("Expected length percentage or number");
+
+    auto const value = TRY(parse_number());
+
+    if (match('%')) {
+        consume();
+        return LengthPercentageOrNumber(CSS::Percentage(value));
+    }
+
+    if (!match_length_type(value))
+        return LengthPercentageOrNumber(value);
+
+    auto const type = TRY(parse_length_type(value));
+    return LengthPercentageOrNumber(CSS::Length(value, type));
+
+    /*
+    if (auto length_percentage_or_error = parse_length_percentage(); !length_percentage_or_error.is_error()) {
+        auto length_percentage = length_percentage_or_error.release_value();
+        return LengthPercentageOrNumber(move(length_percentage));
+    }
+
+    auto const value = TRY(parse_number());
+    return LengthPercentageOrNumber(value);
+    */
+}
+
+ErrorOr<CSS::LengthPercentage> AttributeParser::parse_length_percentage()
+{
+    auto const value = TRY(parse_number());
+
+    if (match('%')) {
+        consume();
+        return CSS::LengthPercentage(CSS::Percentage(value));
+    }
+
+    auto const type = TRY(parse_length_type(value));
+    return CSS::LengthPercentage(CSS::Length(value, type));
+}
+
+ErrorOr<CSS::Length::Type> AttributeParser::parse_length_type(float value)
+{
+    auto const name = m_lexer.consume_while(is_ascii_alphanumeric);
+    if (name.is_empty() && value == 0)
+        return CSS::Length::Type::Auto;
+
+    auto const maybe_type = CSS::Length::unit_from_name(name);
+    if (!maybe_type.has_value())
+        return Error::from_string_literal("Expected length type");
+    return maybe_type.value();
 }
 
 ErrorOr<float> AttributeParser::parse_coordinate()
@@ -741,6 +837,23 @@ bool AttributeParser::match_length() const
         offset++;
 
     return !done() && isdigit(ch(offset));
+}
+
+bool AttributeParser::match_length_type(float value) const
+{
+    if (done())
+        return false;
+
+    size_t offset = 0;
+    while (is_ascii_alphanumeric(ch(offset)))
+        ++offset;
+
+    auto const maybe_name = m_lexer.peek_string(offset);
+    if (!maybe_name.has_value() || maybe_name.value().is_empty())
+        return value == 0;
+
+    auto const name = maybe_name.value();
+    return CSS::Length::unit_from_name(name).has_value();
 }
 
 }

@@ -11,6 +11,7 @@
 #include <LibWeb/Bindings/SVGTextPositioningElementPrototype.h>
 #include <LibWeb/CSS/Parser/Parser.h>
 #include <LibWeb/DOM/Document.h>
+#include <LibWeb/Layout/Node.h>
 #include <LibWeb/SVG/AttributeNames.h>
 #include <LibWeb/SVG/AttributeParser.h>
 #include <LibWeb/SVG/SVGGeometryElement.h>
@@ -34,25 +35,30 @@ void SVGTextPositioningElement::attribute_changed(FlyString const& name, Optiona
     Base::attribute_changed(name, old_value, value, namespace_);
 
     if (name == SVG::AttributeNames::x) {
-        m_x = AttributeParser::parse_number_percentage(value.value_or(String {}));
+        m_x = AttributeParser::parse_length_percentage_or_number(value.value_or(String {}));
     } else if (name == SVG::AttributeNames::y) {
-        m_y = AttributeParser::parse_number_percentage(value.value_or(String {}));
+        m_y = AttributeParser::parse_length_percentage_or_number(value.value_or(String {}));
     } else if (name == SVG::AttributeNames::dx) {
-        m_dx = AttributeParser::parse_number_percentage(value.value_or(String {}));
+        m_dx = AttributeParser::parse_length_percentage_or_number(value.value_or(String {}));
     } else if (name == SVG::AttributeNames::dy) {
-        m_dy = AttributeParser::parse_number_percentage(value.value_or(String {}));
+        m_dy = AttributeParser::parse_length_percentage_or_number(value.value_or(String {}));
     }
 }
 
 Gfx::FloatPoint SVGTextPositioningElement::get_offset(CSSPixelSize const& viewport_size) const
 {
-    auto const viewport_width = viewport_size.width().to_float();
-    auto const viewport_height = viewport_size.height().to_float();
+    if (!layout_node())
+        return {};
 
-    float const x = m_x.value_or({ 0, false }).resolve_relative_to(viewport_width);
-    float const y = m_y.value_or({ 0, false }).resolve_relative_to(viewport_height);
-    float const dx = m_dx.value_or({ 0, false }).resolve_relative_to(viewport_width);
-    float const dy = m_dy.value_or({ 0, false }).resolve_relative_to(viewport_height);
+    auto const viewport_width = viewport_size.width();
+    auto const viewport_height = viewport_size.height();
+
+    auto const& node = static_cast<Layout::Node const&>(*layout_node());
+
+    auto const x = m_x.value_or(LengthPercentageOrNumber(0)).to_px(node, viewport_width).to_float();
+    auto const y = m_y.value_or(LengthPercentageOrNumber(0)).to_px(node, viewport_height).to_float();
+    auto const dx = m_dx.value_or(LengthPercentageOrNumber(0)).to_px(node, viewport_width).to_float();
+    auto const dy = m_dy.value_or(LengthPercentageOrNumber(0)).to_px(node, viewport_height).to_float();
 
     return { x + dx, y + dy };
 }
