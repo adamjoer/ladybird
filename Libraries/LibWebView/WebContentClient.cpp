@@ -533,6 +533,7 @@ void WebContentClient::did_close_browsing_context(u64 page_id)
 
 void WebContentClient::did_update_resource_count(u64 page_id, i32 count_waiting)
 {
+    // dbgln("WebContentClient::did_update_resource_count: page_id={}, count_waiting={}", page_id, count_waiting);
     if (auto view = view_for_page_id(page_id); view.has_value()) {
         if (view->on_resource_status_change)
             view->on_resource_status_change(count_waiting);

@@ -129,13 +129,11 @@ Tab::Tab(BrowserWindow* window, RefPtr<WebView::WebContentClient> parent_client,
     };
 
     view().on_link_hover = [this](auto const& url) {
-        m_hover_label->setText(qstring_from_ak_string(url.to_byte_string()));
-        update_hover_label();
-        m_hover_label->show();
+        update_status(url.to_string());
     };
 
-    view().on_link_unhover = [this]() {
-        m_hover_label->hide();
+    view().on_link_unhover = [this] {
+        update_status();
     };
 
     view().on_load_start = [this](const URL::URL& url, bool) {
@@ -149,10 +147,25 @@ Tab::Tab(BrowserWindow* window, RefPtr<WebView::WebContentClient> parent_client,
 
         m_location_edit->set_url(url);
         m_location_edit->setCursorPosition(0);
+
+        m_navigating_url = url;
+        m_is_loading = true;
+    };
+
+    view().on_load_finish = [this](auto const&) {
+        dbgln("Load finish!");
+        m_navigating_url = {};
+        m_is_loading = false;
+
+        update_status();
     };
 
     view().on_url_change = [this](auto const& url) {
         m_location_edit->set_url(url);
+    };
+
+    view().on_resource_status_change = [this](auto count_waiting) {
+        update_status({}, count_waiting);
     };
 
     QObject::connect(m_location_edit, &QLineEdit::returnPressed, this, &Tab::location_edit_return_pressed);
@@ -829,6 +842,44 @@ void Tab::copy_link_url(URL::URL const& url)
 {
     auto* clipboard = QGuiApplication::clipboard();
     clipboard->setText(qstring_from_ak_string(WebView::url_text_to_copy(url)));
+}
+
+void Tab::update_status(Optional<String> text_override, i32 count_waiting)
+{
+    if (text_override.has_value()) {
+        m_hover_label->setText(qstring_from_ak_string(text_override.value()));
+        update_hover_label();
+        m_hover_label->show();
+        return;
+    }
+
+    if (!m_is_loading || !m_navigating_url.has_value()) {
+        // dbgln("m_is_loading={}, m_navigating_url.has_value()={}", m_is_loading, m_navigating_url.has_value());
+        m_hover_label->hide();
+        return;
+    }
+
+    auto status_or_error = [&] {
+        // dbgln("Generating loading status");
+        if (count_waiting == 0)
+            return String::formatted("{} is loading", m_navigating_url->serialized_host());
+
+        return String::formatted("{} is waiting for {} resource{}",
+            m_navigating_url->serialized_host(),
+            count_waiting,
+            count_waiting == 1 ? ""sv : "s"sv);
+    }();
+
+    if (status_or_error.is_error()) {
+        m_hover_label->hide();
+        return;
+    }
+
+    // dbgln("{}", status_or_error.value());
+
+    m_hover_label->setText(qstring_from_ak_string(status_or_error.release_value()));
+    update_hover_label();
+    m_hover_label->show();
 }
 
 void Tab::location_edit_return_pressed()

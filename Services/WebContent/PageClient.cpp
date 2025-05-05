@@ -580,6 +580,7 @@ void PageClient::page_did_expire_cookies_with_time_offset(AK::Duration offset)
 
 void PageClient::page_did_update_resource_count(i32 count_waiting)
 {
+    // dbgln("{} is waiting for {} resources", page().top_level_browsing_context().active_document()->url(), count_waiting);
     client().async_did_update_resource_count(m_id, count_waiting);
 }
 
