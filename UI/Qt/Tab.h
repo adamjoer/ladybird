@@ -111,6 +111,8 @@ private:
     void open_link_in_new_tab(URL::URL const&);
     void copy_link_url(URL::URL const&);
 
+    void update_status(Optional<String> text_override = {}, i32 count_waiting = 0);
+
     QBoxLayout* m_layout { nullptr };
     QToolBar* m_toolbar { nullptr };
     QToolButton* m_hamburger_button { nullptr };
@@ -156,9 +158,11 @@ private:
     int tab_index();
 
     QPointer<QDialog> m_dialog;
-
+    Optional<URL::URL> m_navigating_url;
     bool m_can_navigate_back { false };
     bool m_can_navigate_forward { false };
+
+    bool m_is_loading { false };
 };
 
 }
