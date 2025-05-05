@@ -128,6 +128,7 @@ Tab::Tab(BrowserWindow* window, RefPtr<WebView::WebContentClient> parent_client,
         m_window->close_tab(tab_index());
     };
 
+    /*
     view().on_link_hover = [this](auto const& url) {
         m_hover_label->setText(qstring_from_ak_string(url.to_byte_string()));
         update_hover_label();
@@ -137,6 +138,7 @@ Tab::Tab(BrowserWindow* window, RefPtr<WebView::WebContentClient> parent_client,
     view().on_link_unhover = [this]() {
         m_hover_label->hide();
     };
+    */
 
     view().on_load_start = [this](const URL::URL& url, bool) {
         auto url_serialized = qstring_from_ak_string(url.serialize());
@@ -153,6 +155,25 @@ Tab::Tab(BrowserWindow* window, RefPtr<WebView::WebContentClient> parent_client,
 
     view().on_url_change = [this](auto const& url) {
         m_location_edit->set_url(url);
+    };
+
+    view().on_resource_status_change = [this](auto count_waiting) {
+        // dbgln("{} is waiting for {} resources", view().url().serialized_host(), count_waiting);
+        if (count_waiting == 0) {
+            m_hover_label->hide();
+            return;
+        }
+
+        auto status_or_error = String::formatted("{} is waiting for {} resource{}",
+            view().url().serialized_host(),
+            count_waiting,
+            count_waiting == 1 ? ""sv : "s"sv);
+        if (status_or_error.is_error())
+            return;
+
+        m_hover_label->setText(qstring_from_ak_string(status_or_error.release_value()));
+        update_hover_label();
+        m_hover_label->show();
     };
 
     QObject::connect(m_location_edit, &QLineEdit::returnPressed, this, &Tab::location_edit_return_pressed);
