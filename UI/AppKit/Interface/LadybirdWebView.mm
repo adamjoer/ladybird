@@ -573,6 +573,7 @@ static void copy_data_to_clipboard(StringView data, NSPasteboardType pasteboard_
         self.toolTip = nil;
     };
 
+/*
     m_web_view_bridge->on_link_hover = [weak_self](auto const& url) {
         LadybirdWebView* self = weak_self;
         if (self == nil) {
@@ -592,6 +593,28 @@ static void copy_data_to_clipboard(StringView data, NSPasteboardType pasteboard_
             return;
         }
         [self.status_label setHidden:YES];
+    };
+*/
+    m_web_view_bridge->on_resource_status_change = [weak_self](auto count_waiting) {
+        LadybirdWebView* self = weak_self;
+        if (self == nil) {
+            return;
+        }
+
+        if (count_waiting == 0) {
+            [self.status_label setHidden:YES];
+            return;
+        }
+        auto status = MUST(String::formatted("{} is waiting for {} resource{}",
+            self.view.url().serialized_host(),
+            count_waiting,
+            count_waiting == 1 ? "" : "s"));
+
+        [self.status_label setStringValue:Ladybird::string_to_ns_string(status)];
+        [self.status_label sizeToFit];
+        [self.status_label setHidden:NO];
+
+        [self updateStatusLabelPosition];
     };
 
     m_web_view_bridge->on_link_click = [weak_self](auto const& url, auto const& target, unsigned modifiers) {
