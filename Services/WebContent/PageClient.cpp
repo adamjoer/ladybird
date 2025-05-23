@@ -372,6 +372,7 @@ void PageClient::page_did_middle_click_link(URL::URL const& url, ByteString cons
 
 void PageClient::page_did_start_loading(URL::URL const& url, bool is_redirect)
 {
+    dbgln("PageClient::page_did_start_loading: url={}, is_redirect={}", url, is_redirect);
     client().async_did_start_loading(m_id, url, is_redirect);
 }
 
@@ -397,6 +398,7 @@ void PageClient::page_did_change_active_document_in_top_level_browsing_context(W
 
 void PageClient::page_did_finish_loading(URL::URL const& url)
 {
+    dbgln("PageClient::page_did_finish_loading: url={}", url);
     client().async_did_finish_loading(m_id, url);
 }
 

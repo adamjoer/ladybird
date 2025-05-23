@@ -3015,6 +3015,7 @@ void Document::update_readiness(HTML::DocumentReadyState readiness_value)
             if (!is_decoded_svg()) {
                 HTML::HTMLLinkElement::load_fallback_favicon_if_needed(*this).release_value_but_fixme_should_propagate_errors();
             }
+            dbgln("Document::update_readiness: page_did_finish_loading({})", url());
             navigable->traversable_navigable()->page().client().page_did_finish_loading(url());
         } else {
             m_needs_to_call_page_did_load = true;
@@ -4525,6 +4526,7 @@ void Document::make_active()
     HTML::relevant_settings_object(window).execution_ready = true;
 
     if (m_needs_to_call_page_did_load) {
+        dbgln("Document::make_active: page_did_finish_loading({})", url());
         navigable()->traversable_navigable()->page().client().page_did_finish_loading(url());
         m_needs_to_call_page_did_load = false;
     }

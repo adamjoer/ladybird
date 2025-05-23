@@ -1622,6 +1622,7 @@ void Navigable::begin_navigation(NavigateParams params)
 
     // AD-HOC: Tell the UI that we started loading.
     if (is_top_level_traversable()) {
+        dbgln("Ad-hoc - Navigable::begin_navigation: top level navigable started loading {}", url);
         active_browsing_context()->page().client().page_did_start_loading(url, false);
     }
 
