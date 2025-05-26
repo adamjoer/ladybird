@@ -10,3 +10,5 @@ Libraries/LibJS/Tests/using-for-loops.js
 
 Tests/LibWeb/Ref/input/wpt-import
 Tests/LibWeb/Text/input/wpt-import
+
+wpt.live

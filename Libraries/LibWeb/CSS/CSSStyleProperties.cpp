@@ -423,6 +423,7 @@ static RefPtr<CSSStyleValue const> style_value_for_shadow(Vector<ShadowData> con
 // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-getpropertyvalue
 String CSSStyleProperties::get_property_value(StringView property_name) const
 {
+    dbgln("CSSStyleProperties::get_property_value({})", property_name);
     auto property_id = property_id_from_string(property_name);
     if (!property_id.has_value())
         return {};
@@ -440,6 +441,8 @@ String CSSStyleProperties::get_property_value(StringView property_name) const
     auto maybe_property = get_property_internal(property_id.value());
     if (!maybe_property.has_value())
         return {};
+
+    dbgln("Value type: {}", static_cast<int>(maybe_property->value->type()));
     return maybe_property->value->to_string(
         is_computed() ? SerializationMode::ResolvedValue
                       : SerializationMode::Normal);

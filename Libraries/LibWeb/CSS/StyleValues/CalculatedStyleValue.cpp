@@ -135,6 +135,7 @@ static String serialize_a_calculation_tree(CalculationNode const&, CalculationCo
 // https://drafts.csswg.org/css-values-4/#serialize-a-math-function
 static String serialize_a_math_function(CalculationNode const& fn, CalculationContext const& context, SerializationMode serialization_mode)
 {
+    dbgln("serialize_a_math_function");
     // To serialize a math function fn:
 
     // 1. If the root of the calculation tree fn represents is a numeric value (number, percentage, or dimension), and
@@ -2652,6 +2653,7 @@ void CalculatedStyleValue::CalculationResult::invert()
 
 String CalculatedStyleValue::to_string(SerializationMode serialization_mode) const
 {
+    dbgln("CalculatedStyleValue::to_string({})", serialization_mode == SerializationMode::Normal ? "Normal"sv : "ResolvedValue"sv);
     return serialize_a_math_function(m_calculation, m_context, serialization_mode);
 }
 

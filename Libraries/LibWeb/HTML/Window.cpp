@@ -1270,6 +1270,7 @@ Variant<GC::Root<DOM::Event>, Empty> Window::event() const
 // https://w3c.github.io/csswg-drafts/cssom/#dom-window-getcomputedstyle
 GC::Ref<CSS::CSSStyleDeclaration> Window::get_computed_style(DOM::Element& element, Optional<String> const& pseudo_element) const
 {
+    dbgln("Window::get_computed_style()");
     // 1. Let doc be elt’s node document.
 
     // 2. Let obj be elt.
