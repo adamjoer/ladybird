@@ -4637,14 +4637,24 @@ RefPtr<Gfx::ImmutableBitmap> Element::capture_the_image()
 
 void Element::set_pointer_capture(WebIDL::Long pointer_id)
 {
-    (void)pointer_id;
-    dbgln("FIXME: Implement Element::setPointerCapture()");
+    auto const navigable = this->navigable();
+    if (!navigable) {
+        return;
+    }
+
+    auto& event_handler = navigable->event_handler();
+    event_handler.set_pointer_capture(pointer_id, this);
 }
 
 void Element::release_pointer_capture(WebIDL::Long pointer_id)
 {
-    (void)pointer_id;
-    dbgln("FIXME: Implement Element::releasePointerCapture()");
+    auto const navigable = this->navigable();
+    if (!navigable) {
+            return;
+    }
+
+    auto& event_handler = navigable->event_handler();
+    event_handler.release_pointer_capture(pointer_id, this);
 }
 
 bool Element::has_pointer_capture(WebIDL::Long pointer_id)
