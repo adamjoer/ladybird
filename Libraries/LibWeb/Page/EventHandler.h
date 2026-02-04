@@ -68,6 +68,9 @@ public:
 
     bool is_handling_mouse_selection() const { return m_selection_mode != SelectionMode::None; }
 
+    void set_pointer_capture(WebIDL::Long pointer_id, DOM::Element* element);
+    void release_pointer_capture(WebIDL::Long pointer_id, DOM::Element* element);
+
 private:
     EventResult focus_next_element();
     EventResult focus_previous_element();
@@ -116,6 +119,8 @@ private:
     OwnPtr<Unicode::Segmenter> m_word_segmenter;
 
     OwnPtr<AutoScrollHandler> m_auto_scroll_handler;
+
+    DOM::Element *m_captured_element { nullptr };
 };
 
 }
