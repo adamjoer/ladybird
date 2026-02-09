@@ -957,18 +957,17 @@ EventResult EventHandler::handle_mousedown(CSSPixelPoint visual_viewport_positio
 void EventHandler::set_pointer_capture(WebIDL::Long pointer_id, DOM::Element* element)
 {
     dbgln("Setting pointer capture: pointer_id={}, element={}", pointer_id, element ? element->debug_description() : "null"sv);
-    m_captured_element = element;
+    m_pointer_captured_elements.set(pointer_id, element);
 }
 
 void EventHandler::release_pointer_capture(WebIDL::Long pointer_id, DOM::Element* element)
 {
-    if (m_captured_element != element) {
+    if(!m_pointer_captured_elements.contains(pointer_id)) {
         dbgln("Attempted to release pointer capture on element {} but it was not the captured element", element ? element->debug_description() : "null"sv);
         return;
     }
     dbgln("Releasing pointer capture: pointer_id={}, element={}", pointer_id, element ? element->debug_description() : "null"sv);
-    m_captured_element = nullptr;
-
+    m_pointer_captured_elements.remove(pointer_id);
 }
 
 EventResult EventHandler::handle_mousemove(CSSPixelPoint visual_viewport_position, CSSPixelPoint screen_position, u32 buttons, u32 modifiers)
@@ -1957,9 +1956,11 @@ Optional<EventHandler::Target> EventHandler::target_for_mouse_position(CSSPixelP
         m_mouse_event_tracking_paintable = nullptr;
     }
 
+    /*
     if (m_captured_element) {
         return Target { m_captured_element->paintable(), {}, {} };
     }
+    */
 
     if (auto result = paint_root()->hit_test(position, Painting::HitTestType::Exact); result.has_value())
         return Target { result->paintable.ptr(), result->index_in_node, result->cursor_override };

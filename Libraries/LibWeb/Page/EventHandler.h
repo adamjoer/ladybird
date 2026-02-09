@@ -120,7 +120,7 @@ private:
 
     OwnPtr<AutoScrollHandler> m_auto_scroll_handler;
 
-    DOM::Element *m_captured_element { nullptr };
+    HashMap<WebIDL::Long, DOM::Element*> m_pointer_captured_elements;
 };
 
 }
