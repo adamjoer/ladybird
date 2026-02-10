@@ -234,19 +234,19 @@ ChromeMetrics Page::chrome_metrics() const
     return ChromeMetrics { m_client->zoom_level() };
 }
 
-EventResult Page::handle_mouseup(DevicePixelPoint position, DevicePixelPoint screen_position, unsigned button, unsigned buttons, unsigned modifiers)
+EventResult Page::handle_mouseup(DevicePixelPoint position, DevicePixelPoint screen_position, unsigned button, unsigned buttons, unsigned modifiers, Optional<u32> pointer_id)
 {
-    return top_level_traversable()->event_handler().handle_mouseup(device_to_css_point(position), device_to_css_point(screen_position), button, buttons, modifiers);
+    return top_level_traversable()->event_handler().handle_mouseup(device_to_css_point(position), device_to_css_point(screen_position), button, buttons, modifiers, pointer_id);
 }
 
-EventResult Page::handle_mousedown(DevicePixelPoint position, DevicePixelPoint screen_position, unsigned button, unsigned buttons, unsigned modifiers)
+EventResult Page::handle_mousedown(DevicePixelPoint position, DevicePixelPoint screen_position, unsigned button, unsigned buttons, unsigned modifiers, Optional<u32> pointer_id)
 {
-    return top_level_traversable()->event_handler().handle_mousedown(device_to_css_point(position), device_to_css_point(screen_position), button, buttons, modifiers);
+    return top_level_traversable()->event_handler().handle_mousedown(device_to_css_point(position), device_to_css_point(screen_position), button, buttons, modifiers, pointer_id);
 }
 
-EventResult Page::handle_mousemove(DevicePixelPoint position, DevicePixelPoint screen_position, unsigned buttons, unsigned modifiers)
+EventResult Page::handle_mousemove(DevicePixelPoint position, DevicePixelPoint screen_position, unsigned buttons, unsigned modifiers, Optional<u32> pointer_id)
 {
-    return top_level_traversable()->event_handler().handle_mousemove(device_to_css_point(position), device_to_css_point(screen_position), buttons, modifiers);
+    return top_level_traversable()->event_handler().handle_mousemove(device_to_css_point(position), device_to_css_point(screen_position), buttons, modifiers, pointer_id);
 }
 
 EventResult Page::handle_mouseleave()

@@ -1123,7 +1123,7 @@ static ErrorOr<void, WebDriver::Error> dispatch_pointer_down_action(ActionObject
     //     set to the default value specified for hardware that doesn't support that property.
     switch (pointer_type) {
     case PointerInputSource::Subtype::Mouse:
-        browsing_context.page().handle_mousedown(position, position, button, buttons, global_key_state.modifiers());
+        browsing_context.page().handle_mousedown(position, position, button, buttons, global_key_state.modifiers(), source.pointer_id);
         break;
     case PointerInputSource::Subtype::Pen:
         return WebDriver::Error::from_code(WebDriver::ErrorCode::UnsupportedOperation, "Pen events not implemented"sv);
@@ -1165,7 +1165,7 @@ static ErrorOr<void, WebDriver::Error> dispatch_pointer_up_action(ActionObject::
     //    doesn't support that property.
     switch (pointer_type) {
     case PointerInputSource::Subtype::Mouse:
-        browsing_context.page().handle_mouseup(position, position, button, buttons, global_key_state.modifiers());
+        browsing_context.page().handle_mouseup(position, position, button, buttons, global_key_state.modifiers(), source.pointer_id);
         break;
     case PointerInputSource::Subtype::Pen:
         return WebDriver::Error::from_code(WebDriver::ErrorCode::UnsupportedOperation, "Pen events not implemented"sv);
@@ -1211,7 +1211,7 @@ static ErrorOr<void, WebDriver::Error> perform_pointer_move(ActionObject::Pointe
 
         switch (action_object.pointer_type) {
         case PointerInputSource::Subtype::Mouse:
-            browsing_context.page().handle_mousemove(position, position, buttons, global_key_state.modifiers());
+            browsing_context.page().handle_mousemove(position, position, buttons, global_key_state.modifiers(), source.pointer_id);
             break;
         case PointerInputSource::Subtype::Pen:
             return WebDriver::Error::from_code(WebDriver::ErrorCode::UnsupportedOperation, "Pen events not implemented"sv);

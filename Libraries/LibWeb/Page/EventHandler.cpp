@@ -635,8 +635,9 @@ EventResult EventHandler::handle_mousewheel(CSSPixelPoint visual_viewport_positi
     return handled_event;
 }
 
-EventResult EventHandler::handle_mouseup(CSSPixelPoint visual_viewport_position, CSSPixelPoint screen_position, u32 button, u32 buttons, u32 modifiers)
+EventResult EventHandler::handle_mouseup(CSSPixelPoint visual_viewport_position, CSSPixelPoint screen_position, u32 button, u32 buttons, u32 modifiers, Optional<u32> pointer_id)
 {
+    (void)pointer_id;
     if (should_ignore_device_input_event())
         return EventResult::Dropped;
 
@@ -806,8 +807,9 @@ after_node_use:
     return handled_event;
 }
 
-EventResult EventHandler::handle_mousedown(CSSPixelPoint visual_viewport_position, CSSPixelPoint screen_position, u32 button, u32 buttons, u32 modifiers)
+EventResult EventHandler::handle_mousedown(CSSPixelPoint visual_viewport_position, CSSPixelPoint screen_position, u32 button, u32 buttons, u32 modifiers, Optional<u32> pointer_id)
 {
+    (void)pointer_id;
     if (should_ignore_device_input_event())
         return EventResult::Dropped;
 
@@ -970,7 +972,7 @@ void EventHandler::release_pointer_capture(WebIDL::Long pointer_id, DOM::Element
     m_pointer_captured_elements.remove(pointer_id);
 }
 
-EventResult EventHandler::handle_mousemove(CSSPixelPoint visual_viewport_position, CSSPixelPoint screen_position, u32 buttons, u32 modifiers)
+EventResult EventHandler::handle_mousemove(CSSPixelPoint visual_viewport_position, CSSPixelPoint screen_position, u32 buttons, u32 modifiers, Optional<u32> pointer_id)
 {
     if (should_ignore_device_input_event())
         return EventResult::Dropped;
@@ -1057,8 +1059,8 @@ EventResult EventHandler::handle_mousemove(CSSPixelPoint visual_viewport_positio
 
         node = dom_node_for_event_dispatch(*paintable);
 
-        if (auto result = dispatch_event_to_nested_navigable(*paintable, visual_viewport_position, [screen_position, buttons, modifiers](EventHandler& event_handler, CSSPixelPoint position) -> EventResult {
-                return event_handler.handle_mousemove(position, screen_position, buttons, modifiers);
+        if (auto result = dispatch_event_to_nested_navigable(*paintable, visual_viewport_position, [screen_position, buttons, modifiers, pointer_id](EventHandler& event_handler, CSSPixelPoint position) -> EventResult {
+                return event_handler.handle_mousemove(position, screen_position, buttons, modifiers, pointer_id);
             });
             result.has_value())
             return result.value();
