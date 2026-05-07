@@ -183,9 +183,11 @@ enum KeyModifier {
 #if defined(AK_OS_MACOS)
     Mod_PlatformCtrl = Mod_Super,
     Mod_PlatformWordJump = Mod_Alt,
+    Mod_PlatformWordDelete = Mod_Alt,
 #else
     Mod_PlatformCtrl = Mod_Ctrl,
     Mod_PlatformWordJump = Mod_Ctrl,
+    Mod_PlatformWordDelete = Mod_Ctrl,
 #endif
 };
 

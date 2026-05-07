@@ -1859,12 +1859,25 @@ EventResult EventHandler::handle_keydown(UIEvents::KeyCode key, u32 modifiers, u
     auto* target = document->active_input_events_target();
     if (target) {
         if (key == UIEvents::KeyCode::Key_Backspace) {
+            // Is this ctrl+backspace?
+            if ((modifiers & UIEvents::Mod_PlatformWordDelete) != 0) {
+                FIRE(input_event(UIEvents::EventNames::beforeinput, UIEvents::InputTypes::deleteContentBackward, m_navigable, code_point));
+                target->handle_delete_word(UIEvents::InputTypes::deleteContentBackward);
+                return EventResult::Handled;
+            }
+
             FIRE(input_event(UIEvents::EventNames::beforeinput, UIEvents::InputTypes::deleteContentBackward, m_navigable, code_point));
             target->handle_delete(UIEvents::InputTypes::deleteContentBackward);
             return EventResult::Handled;
         }
 
         if (key == UIEvents::KeyCode::Key_Delete) {
+            if ((modifiers & UIEvents::Mod_PlatformWordDelete) != 0) {
+                FIRE(input_event(UIEvents::EventNames::beforeinput, UIEvents::InputTypes::deleteContentForward, m_navigable, code_point));
+                target->handle_delete_word(UIEvents::InputTypes::deleteContentForward);
+                return EventResult::Handled;
+            }
+
             FIRE(input_event(UIEvents::EventNames::beforeinput, UIEvents::InputTypes::deleteContentForward, m_navigable, code_point));
             target->handle_delete(UIEvents::InputTypes::deleteContentForward);
             return EventResult::Handled;

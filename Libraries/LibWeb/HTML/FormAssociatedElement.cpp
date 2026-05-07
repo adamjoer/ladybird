@@ -1091,6 +1091,47 @@ void FormAssociatedTextControlElement::handle_delete(FlyString const& input_type
     scroll_cursor_into_view();
 }
 
+void FormAssociatedTextControlElement::handle_delete_word(FlyString const& input_type)
+{
+    auto const text_node = form_associated_element_to_text_node();
+    if (!text_node || !text_control_to_html_element().is_mutable()) {
+        return;
+    }
+
+    auto selection_start = this->selection_start();
+    auto selection_end = this->selection_end();
+
+    if (selection_start == selection_end) {
+        if (input_type == UIEvents::InputTypes::deleteContentBackward) {
+            while (true) {
+                if (auto offset = text_node->word_segmenter().previous_boundary(selection_start); offset.has_value()) {
+                    auto word = text_node->data().substring_view(*offset, selection_start - *offset);
+                    selection_start = *offset;
+                    if (!Unicode::Segmenter::should_continue_beyond_word(word)) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            while (true) {
+                if (auto offset = text_node->word_segmenter().next_boundary(selection_end); offset.has_value()) {
+                    auto word = text_node->data().substring_view(selection_end, *offset - selection_end);
+                    selection_end = *offset;
+                    if (!Unicode::Segmenter::should_continue_beyond_word(word)) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    MUST(set_range_text({}, selection_start, selection_end, Bindings::SelectionMode::End));
+
+    text_node->invalidate_style(DOM::StyleInvalidationReason::EditingDeletion);
+    did_edit_text_node(input_type, {});
+    scroll_cursor_into_view();
+}
+
 Optional<Utf16String> FormAssociatedTextControlElement::selected_text_for_stringifier() const
 {
     // https://w3c.github.io/selection-api/#dom-selection-stringifier

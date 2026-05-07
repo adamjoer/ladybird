@@ -274,6 +274,7 @@ public:
 
     virtual void handle_insert(FlyString const& input_type, Utf16String const&) override;
     virtual void handle_delete(FlyString const& input_type) override;
+    virtual void handle_delete_word(FlyString const& input_type) override;
     virtual void select_all() override;
     virtual void set_selection_anchor(GC::Ref<DOM::Node>, size_t offset) override;
     virtual void set_selection_focus(GC::Ref<DOM::Node>, size_t offset) override;

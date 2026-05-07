@@ -187,6 +187,12 @@ void EditingHostManager::handle_delete(FlyString const& input_type)
         dbgln("handle_delete(): editing resulted in exception: {}", editing_result.exception());
 }
 
+void EditingHostManager::handle_delete_word(FlyString const& input_type)
+{
+    dbgln("TODO: EditingHostManager::handle_delete_word(\"{}\")", input_type);
+}
+
+
 EventResult EditingHostManager::handle_return_key(FlyString const& ui_input_type)
 {
     VERIFY(ui_input_type == UIEvents::InputTypes::insertParagraph || ui_input_type == UIEvents::InputTypes::insertLineBreak);
